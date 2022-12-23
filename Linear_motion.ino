@@ -82,7 +82,7 @@ void loop() {
     Serial.print("now executing in data is:");
     in_dir = EEPROM.read(in_address);
     Serial.println(in_dir);
-    delay(500);
+    
     in();
     
     }
@@ -103,7 +103,7 @@ void loop() {
       EEPROM.update(in_address, state1);
     }  
     Serial.println("now executing out");
-    delay(500);
+    
     out();
     
     }
@@ -140,11 +140,14 @@ void in() {
   state1 = in_dir;
   Serial.print("I am about to set it as output and the state is: ");
   Serial.println(state1);
-  digitalWrite(state1, 1);
-  delay(400);
-
+  delay(500);
+  inn = analogRead(in_signal);
+  if (inn>=600){
+    digitalWrite(state1, 1);
+    delay(400);
+  }
   digitalWrite(state1, 0);
-  delay(2000);
+  delay(1900);
   
   }
 
@@ -175,10 +178,14 @@ void in() {
   //now let's set the digital outputs. After setting it has high or low , it has to check in case the stae has been changed to avoid errors
   out_dir = EEPROM.read(out_address); //check what was saved to the memory 
   state2 = out_dir;
-  digitalWrite(state2, 1);
-  delay(400);
+  delay(500);
+  outt= analogRead(out_signal);
+  if (outt>=600) {
+    digitalWrite(state2, 1);
+    delay(400);
+  }
 
   digitalWrite(state2, 0);
-  delay(3000);
+  delay(2700);
   
   }
