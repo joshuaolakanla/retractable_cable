@@ -1,5 +1,3 @@
-//Code created by Joshua Olakanla Jossytech 
-//Upload date 12-15-2022
 //D is out on the remote
 #include <EEPROM.h>
 int linear_left = 2;
@@ -84,6 +82,7 @@ void loop() {
     Serial.print("now executing in data is:");
     in_dir = EEPROM.read(in_address);
     Serial.println(in_dir);
+    delay(500);
     in();
     
     }
@@ -104,6 +103,7 @@ void loop() {
       EEPROM.update(in_address, state1);
     }  
     Serial.println("now executing out");
+    delay(500);
     out();
     
     }
@@ -179,6 +179,6 @@ void in() {
   delay(400);
 
   digitalWrite(state2, 0);
-  delay(2000);
+  delay(3000);
   
   }
