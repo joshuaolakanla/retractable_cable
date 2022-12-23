@@ -1,5 +1,5 @@
 //Code created by Joshua Olakanla jossytech
-//Date uploaded 12-18-2022
+//Date uploaded 12-15-2022
 //http://192.168.4.1/out1? nodemcu address
 //rx is for rssi mode
 //pin D6 is for app mode
@@ -9,7 +9,7 @@
 #include <DNSServer.h>
 
 const char WiFiPassword[] = "";//Leave Blank if you do not want to have a password to enter the Node
-const char AP_NameChar[] = "JAndro" ;
+const char AP_NameChar[] = "Cable_Control" ;
 char wifissid[] = "Jossy";
 char password[] = "jossytecho";
 const int RSSI_MAX =-50;// define maximum strength of signal in dBm
@@ -17,10 +17,10 @@ const int RSSI_MIN =-100;// define minimum strength of signal in dBm
 
 WiFiServer server(80);
 String request = "";
-int wiper = 5;
-int pusher = 4;
+int wiper = 3;
+int pusher = 5;
 int in = 0;
-int out = 2;
+int out = 15;
 int remoteIn = 13;
 int remoteOut = 14;
 int remote_in;
@@ -32,13 +32,14 @@ int scanDelayTime = 1000;
 int wiFiDisplayTime = 3000;
 int strength;
 int app_trig = 12; //D6
-int rssi_trig = 3; //rx
+int rssi_trig = 4; //rx
 int app_signal;
 int rssi_signal;
 int limit = A0;
 int lim_switch;
 bool outpin_stop;
 bool inpin_stop;
+
 
 
 
@@ -54,6 +55,7 @@ void setup() {
   rssi_signal = digitalRead(rssi_trig);
   Serial.println(app_signal);
   Serial.println(rssi_signal);
+  idle();
   if (app_signal == false){
     Serial.println("App mode...");
     WiFi.disconnect();
@@ -63,10 +65,10 @@ void setup() {
   if (rssi_signal == false){
     WiFi.disconnect();
     WiFiManager wifiManager;
-    wifiManager.autoConnect("Auto_AP");
+    wifiManager.autoConnect("Wifi_Calibration");
     Serial.println("Connected....");
   }
-
+  idle();
 
 
   server.begin();
