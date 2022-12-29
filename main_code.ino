@@ -19,8 +19,8 @@ WiFiServer server(80);
 String request = "";
 int wiper = 3;
 int pusher = 5;
-int in = 0;
-int out = 15;
+int in = 0; //D3
+int out = 15; //D8
 int remoteIn = 13;
 int remoteOut = 14;
 int remote_in;
@@ -31,8 +31,8 @@ int rssi_mode = true;
 int scanDelayTime = 1000;
 int wiFiDisplayTime = 3000;
 int strength;
-int app_trig = 12; //D6
-int rssi_trig = 4; //rx
+int app_trig = 4; //D2
+int rssi_trig = 12; //D6
 int app_signal;
 int rssi_signal;
 int limit = A0;
@@ -51,11 +51,14 @@ void setup() {
   pinMode(app_trig, INPUT_PULLUP);
   pinMode(rssi_trig, INPUT_PULLUP);
   pinMode(limit, INPUT);
+  pinMode(wiper, OUTPUT);
+  pinMode(in, OUTPUT);
+  pinMode(out, OUTPUT);
+  pinMode(pusher, OUTPUT);
+  pinMode(remoteIn, INPUT_PULLUP);
+  pinMode(remoteOut, INPUT_PULLUP);
   app_signal = digitalRead(app_trig);
   rssi_signal = digitalRead(rssi_trig);
-  Serial.println(app_signal);
-  Serial.println(rssi_signal);
-  idle();
   if (app_signal == false){
     Serial.println("App mode...");
     WiFi.disconnect();
@@ -63,21 +66,19 @@ void setup() {
   }
 
   if (rssi_signal == false){
+    idle();
     WiFi.disconnect();
+    idle();
     WiFiManager wifiManager;
+    idle();
     wifiManager.autoConnect("Wifi_Calibration");
     Serial.println("Connected....");
   }
-  idle();
+  
 
 
   server.begin();
-  pinMode(wiper, OUTPUT);
-  pinMode(in, OUTPUT);
-  pinMode(out, OUTPUT);
-  pinMode(pusher, OUTPUT);
-  pinMode(remoteIn, INPUT_PULLUP);
-  pinMode(remoteOut, INPUT_PULLUP);
+  
 }
 
 
@@ -133,11 +134,9 @@ void loop() {
 
   //Remote and application section
   if       ( ((request.indexOf("out1") > 0) || (remote_out == 0 )) && outpin_stop==false )  {   
-    Serial.println("out1");
     outpin();
   }
  else if   ( ((request.indexOf("in1") > 0) || (remote_in == 0)) && inpin_stop == false ) {
-    Serial.println("in1");
     inpin();
   }
   else {
@@ -147,9 +146,80 @@ void loop() {
 }
   
 
+//rssi processing section
+void rssi_signal1(){
+  Serial.print("Connected to: ");
+  Serial.println(wifissid);
+  Serial.print("Wifi signal strength is: ");
+  strength =dBmtoPercentage(WiFi.RSSI());
+  Serial.println(strength); 
 
-
+  lim_switch = analogRead(limit);
+  if (lim_switch>900){
+    outpin_stop = true;
+  }
+  else {
+    outpin_stop = false;
+  }
   
+  if (lim_switch>400 && lim_switch< 700){
+   inpin_stop = true;
+  }
+  else {
+   inpin_stop = false;
+  }
+
+
+  while (strength > 10 && strength <= 54 && outpin_stop==false) {
+    outpin();
+    strength =dBmtoPercentage(WiFi.RSSI());
+    lim_switch = analogRead(limit);
+    if (lim_switch>900){
+      outpin_stop = true;
+     }
+    else {
+      outpin_stop = false;
+     }
+
+  }
+  idle();
+
+  while (strength >= 55 && strength <89 && inpin_stop==false) {
+    inpin();
+    strength =dBmtoPercentage(WiFi.RSSI());
+    lim_switch = analogRead(limit);
+    if (lim_switch>400 && lim_switch< 700){
+      inpin_stop = true;
+      }
+   else {
+      inpin_stop = false;
+       }
+
+  }
+  
+  idle();
+  
+}
+
+int dBmtoPercentage(int dBm)
+{
+  int quality;
+    if(dBm <= RSSI_MIN)
+    {
+        quality = 0;
+    }
+    else if(dBm >= RSSI_MAX)
+    {  
+        quality = 100;
+    }
+    else
+    {
+        quality = 2 * (dBm + 100);
+   }
+
+     return quality;
+}//dBmtoPercentage
+
 
 
 //Control pin output
@@ -174,47 +244,3 @@ void idle() {
   digitalWrite(in, 0);
   digitalWrite(out, 0);
 }
-
-
-
-
-
-
-
-
-//rssi processing section
-void rssi_signal1(){
-  Serial.print("Connected to: ");
-  Serial.println(wifissid);
-  Serial.print("Wifi signal strength is: ");
-  int strength =dBmtoPercentage(WiFi.RSSI());
-  Serial.println(strength); 
-  if ((strength < 70 && strength > 30) && outpin_stop==false) {
-    outpin();
-  }
-  if ((strength >= 70 && strength <90) && inpin_stop==false) {
-    inpin();
-  }
-  if (strength >=90){
-    idle();
-  }
-}
-
-int dBmtoPercentage(int dBm)
-{
-  int quality;
-    if(dBm <= RSSI_MIN)
-    {
-        quality = 0;
-    }
-    else if(dBm >= RSSI_MAX)
-    {  
-        quality = 100;
-    }
-    else
-    {
-        quality = 2 * (dBm + 100);
-   }
-
-     return quality;
-}//dBmtoPercentage
