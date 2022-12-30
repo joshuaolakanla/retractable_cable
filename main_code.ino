@@ -72,7 +72,6 @@ void setup() {
     WiFiManager wifiManager;
     idle();
     wifiManager.autoConnect("Wifi_Calibration");
-    Serial.println("Connected....");
   }
   
 
@@ -170,34 +169,19 @@ void rssi_signal1(){
   }
 
 
-  while (strength > 10 && strength <= 54 && outpin_stop==false) {
+  if (strength > 10 && strength <= 79 && outpin_stop==false) {
+    idle();
     outpin();
-    strength =dBmtoPercentage(WiFi.RSSI());
-    lim_switch = analogRead(limit);
-    if (lim_switch>900){
-      outpin_stop = true;
-     }
-    else {
-      outpin_stop = false;
-     }
-
   }
-  idle();
 
-  while (strength >= 55 && strength <89 && inpin_stop==false) {
+  else if (strength >= 80 && strength <93 && inpin_stop==false) {
+    idle();
     inpin();
-    strength =dBmtoPercentage(WiFi.RSSI());
-    lim_switch = analogRead(limit);
-    if (lim_switch>400 && lim_switch< 700){
-      inpin_stop = true;
-      }
-   else {
-      inpin_stop = false;
-       }
-
+  }
+  else {
+    idle();
   }
   
-  idle();
   
 }
 
@@ -224,7 +208,6 @@ int dBmtoPercentage(int dBm)
 
 //Control pin output
 void outpin() {
-  Serial.println("Out pin activated!");
   analogWrite(wiper, 190);
   digitalWrite(out, 1);
   digitalWrite(pusher, 1);
@@ -232,7 +215,6 @@ void outpin() {
 
 
 void inpin() {
-  Serial.println("In pin activated!");
   digitalWrite(in, 1);
   digitalWrite(wiper, 1);
   analogWrite(pusher, 160);
