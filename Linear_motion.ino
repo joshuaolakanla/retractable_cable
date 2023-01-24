@@ -5,8 +5,8 @@ int linear_right = 3;
 int left_switch = 4;
 int right_switch = 6;
 int empty = 13;
-int in_signal= A0;
-int out_signal = A1;
+int in_signal= A1;
+int out_signal = A0;
 int left;
 int right;
 int state;
@@ -18,6 +18,11 @@ int in_address = 1;
 int out_address = 2;
 int in_dir;
 int out_dir;
+unsigned long t = 0;
+unsigned long ct;
+int interval;
+int x;
+int y;
 void setup() {
  
   pinMode(linear_left, OUTPUT);
@@ -29,6 +34,7 @@ void setup() {
   Serial.begin(9600);
   in_dir = EEPROM.read(in_address);
   out_dir = EEPROM.read(out_address);
+  x = 1;
 }
 
 
@@ -41,10 +47,11 @@ void loop() {
   out_dir = EEPROM.read(out_address);
   
 
-  
+  ct = millis();
 
-  if (inn>=600){
-    
+  while (inn>=600){
+
+    inn = analogRead(in_signal);
     if (out_dir == linear_left) {
       Serial.println("out_dir is equal to linear left");
       Serial.print("out_dir data is ");
@@ -86,10 +93,12 @@ void loop() {
     in();
     
     }
-    
+    ct = millis();
+    t = ct;
+
 
   if (outt>=600) {
-    
+    outt= analogRead(out_signal);
    if (in_dir == linear_left) {
       state2 = linear_right;
       EEPROM.update(out_address, state2);
@@ -107,6 +116,8 @@ void loop() {
     out();
     
     }
+    ct = millis();
+    t = ct;
 
 }
 
@@ -140,16 +151,55 @@ void in() {
   state1 = in_dir;
   Serial.print("I am about to set it as output and the state is: ");
   Serial.println(state1);
-  delay(500);
-  inn = analogRead(in_signal);
-  if (inn>=600){
-    digitalWrite(state1, 1);
-    delay(400);
+  ct = millis();
+  if (x == 1) {
+    if ((ct - t) >= 17500) {
+      t = ct;
+      x = 0;
+      y = 1;
+      inn = analogRead(in_signal);
+      
+        if (left==0) {
+           state1 = linear_left;
+           EEPROM.update(in_address, state1);
+      }
+
+        if (right==0) {
+            state1 = linear_right;
+            EEPROM.update(in_address, state1);
+    }
+
+       if (inn>=600){
+         digitalWrite(state1, 1);
+         delay(400);
+         digitalWrite(state1, 0);
   }
-  digitalWrite(state1, 0);
-  delay(1900);
+    }
+
+  }
+
+
+  if (y == 1) {
+    if ((ct - t) >= 400) {
+      t = ct;
+      x = 1;
+      y = 0;
+      digitalWrite(state1, 0);
+  }
+    }
+
+  }
+
+
+  //delay(11000);
+  //inn = analogRead(in_signal);
+  //if (inn>=600){
+  //  digitalWrite(state1, 1);
+  //  delay(400);
+  //}
+  //digitalWrite(state1, 0);
+  //delay(8000);
   
-  }
 
 
 
@@ -178,7 +228,7 @@ void in() {
   //now let's set the digital outputs. After setting it has high or low , it has to check in case the stae has been changed to avoid errors
   out_dir = EEPROM.read(out_address); //check what was saved to the memory 
   state2 = out_dir;
-  delay(500);
+  delay(1000);
   outt= analogRead(out_signal);
   if (outt>=600) {
     digitalWrite(state2, 1);
@@ -186,6 +236,7 @@ void in() {
   }
 
   digitalWrite(state2, 0);
-  delay(2700);
+  delay(2
+  600);
   
   }
