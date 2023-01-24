@@ -17,8 +17,8 @@ const int RSSI_MIN =-100;// define minimum strength of signal in dBm
 
 WiFiServer server(80);
 String request = "";
-int wiper = 3;
 int pusher = 5;
+int wiper = 3;
 int in = 0; //D3
 int out = 15; //D8
 int remoteIn = 13;
@@ -27,7 +27,6 @@ int remote_in;
 int remote_out;
 int app_mode = false;
 int rssi_mode = true;
-//bool toggle = true;
 int scanDelayTime = 1000;
 int wiFiDisplayTime = 3000;
 int strength;
@@ -51,12 +50,12 @@ void setup() {
   pinMode(app_trig, INPUT_PULLUP);
   pinMode(rssi_trig, INPUT_PULLUP);
   pinMode(limit, INPUT);
-  pinMode(wiper, OUTPUT);
   pinMode(in, OUTPUT);
   pinMode(out, OUTPUT);
   pinMode(pusher, OUTPUT);
   pinMode(remoteIn, INPUT_PULLUP);
   pinMode(remoteOut, INPUT_PULLUP);
+  pinMode(wiper, OUTPUT);
   app_signal = digitalRead(app_trig);
   rssi_signal = digitalRead(rssi_trig);
   if (app_signal == false){
@@ -151,7 +150,6 @@ void rssi_signal1(){
   Serial.println(wifissid);
   Serial.print("Wifi signal strength is: ");
   strength =dBmtoPercentage(WiFi.RSSI());
-  Serial.println(strength); 
 
   lim_switch = analogRead(limit);
   if (lim_switch>900){
@@ -207,17 +205,18 @@ int dBmtoPercentage(int dBm)
 
 
 //Control pin output
+//in
 void outpin() {
-  analogWrite(wiper, 190);
   digitalWrite(out, 1);
+  analogWrite(wiper, 90);
   digitalWrite(pusher, 1);
       }
 
-
+//out
 void inpin() {
   digitalWrite(in, 1);
   digitalWrite(wiper, 1);
-  analogWrite(pusher, 160);
+  analogWrite(pusher, 110);
   
   }
  
