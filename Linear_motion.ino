@@ -1,5 +1,5 @@
-//Code by Olakanla Joshua jossytech
-//B is in on the remote
+//Code by Joshua Olakanla jossy
+//joshuaolakanla16@gmail.com
 //D is in on the remote
 #include <EEPROM.h>
 int linear_left = 2;
@@ -18,6 +18,13 @@ int inn;
 int outt; 
 int in_address = 1;
 int out_address = 2;
+int counter = 6;
+float count;
+unsigned long previousCount = 0;
+int outDelay1 = 3500;
+int outDelay2 = 2500;
+int delayTime;
+int delayTime1;
 int in_dir;
 int out_dir;
 unsigned long t = 0;
@@ -25,6 +32,8 @@ unsigned long ct;
 int interval;
 int x;
 int y;
+int x1;
+int y1;
 void setup() {
  
   pinMode(linear_left, OUTPUT);
@@ -36,7 +45,9 @@ void setup() {
   Serial.begin(9600);
   in_dir = EEPROM.read(in_address);
   out_dir = EEPROM.read(out_address);
+  count = EEPROM.read(counter);
   x = 1;
+  x1 = 1;
 }
 
 
@@ -47,12 +58,29 @@ void loop() {
   outt= analogRead(out_signal);
   in_dir = EEPROM.read(in_address);
   out_dir = EEPROM.read(out_address);
+
+  count = EEPROM.read(counter);
+  if (count >= 250){
+    count = 1;
+    EEPROM.update(counter, count);
+  }
+  Serial.print("Count value is ");
+  Serial.println(count);
+
+  
   
 
   ct = millis();
 
   while (inn>=600){
+    count = EEPROM.read(counter);
+    ct = millis();
+    if ((ct - previousCount)>=1000) {
+      previousCount = ct;
+      count = count + 1;
+      EEPROM.update(counter, count);
 
+    }
     inn = analogRead(in_signal);
     if (out_dir == linear_left) {
       Serial.println("out_dir is equal to linear left");
@@ -97,21 +125,43 @@ void loop() {
     }
     ct = millis();
     t = ct;
+    //previousCount = ct;
 
 
   if (outt>=600) {
+    count = EEPROM.read(counter);
+    ct = millis();
+    if ((ct - previousCount)>=1000) {
+      if (count >=250)
+      {
+        count = 1;
+        EEPROM.update(counter, count);
+      }
+      previousCount = ct;
+      count = count - 1.1;
+      EEPROM.update(counter, count);
+
+      if (count >=250)
+      {
+        count = 1;
+        EEPROM.update(counter, count);
+      }
+
+    }
+
+
     outt= analogRead(out_signal);
    if (in_dir == linear_left) {
       state2 = linear_right;
       EEPROM.update(out_address, state2);
       state1 = false;
-      EEPROM.update(in_address, state1);
+      EEPROM.update(in_address, false);
     }
     if (in_dir == linear_right){
       state2= linear_left;
       EEPROM.update(out_address, state2);
       state1 = false;
-      EEPROM.update(in_address, state1);
+      EEPROM.update(in_address, false);
     }  
     Serial.println("now executing out");
     
@@ -120,8 +170,15 @@ void loop() {
     }
     ct = millis();
     t = ct;
+    //previousCount = ct;
+    x1=1;
 
 }
+
+
+
+
+
 
 
 
@@ -153,27 +210,32 @@ void in() {
   state1 = in_dir;
   Serial.print("I am about to set it as output and the state is: ");
   Serial.println(state1);
+  count = EEPROM.read(counter);
+  Serial.print("Count value is ");
+  Serial.println(count);
+  if (count < 70) {
+    delayTime = 2500;
+  }
+  else {
+    delayTime = 1900;
+    if ((count >=240) && (count <245)) {
+      count = 241;
+      EEPROM.update(counter, count);
+    }
+  }
+  Serial.print("Delay time: ");
+  Serial.println(delayTime);
   ct = millis();
   if (x == 1) {
-    if ((ct - t) >= 17500) {
+    if ((ct - t) >= delayTime) {
       t = ct;
       x = 0;
       y = 1;
       inn = analogRead(in_signal);
       
-        if (left==0) {
-           state1 = linear_left;
-           EEPROM.update(in_address, state1);
-      }
-
-        if (right==0) {
-            state1 = linear_right;
-            EEPROM.update(in_address, state1);
-    }
-
        if (inn>=600){
          digitalWrite(state1, 1);
-         delay(400);
+         delay(200);
          digitalWrite(state1, 0);
   }
     }
@@ -182,7 +244,7 @@ void in() {
 
 
   if (y == 1) {
-    if ((ct - t) >= 400) {
+    if ((ct - t) >= 600) {
       t = ct;
       x = 1;
       y = 0;
@@ -193,15 +255,6 @@ void in() {
   }
 
 
-  //delay(11000);
-  //inn = analogRead(in_signal);
-  //if (inn>=600){
-  //  digitalWrite(state1, 1);
-  //  delay(400);
-  //}
-  //digitalWrite(state1, 0);
-  //delay(8000);
-  
 
 
 
@@ -217,12 +270,14 @@ void in() {
   if (left==0) {
     state2=linear_left;
     EEPROM.update(out_address, state2);
+    delay(50);
     }
 
   //if the right switch was pressed, change the direction
   if (right == 0) {
     state2 = linear_right;
     EEPROM.update(out_address, state2);
+    delay(50);
     }
 
 
@@ -230,15 +285,63 @@ void in() {
   //now let's set the digital outputs. After setting it has high or low , it has to check in case the stae has been changed to avoid errors
   out_dir = EEPROM.read(out_address); //check what was saved to the memory 
   state2 = out_dir;
-  delay(1000);
-  outt= analogRead(out_signal);
-  if (outt>=600) {
-    digitalWrite(state2, 1);
-    delay(400);
+  
+  count = EEPROM.read(counter);
+  if (count <= 60) {
+    delayTime1 = 1550;
+  }
+  else {
+    delayTime1 = 1100;
   }
 
-  digitalWrite(state2, 0);
-  delay(2
-  600);
-  
+      delay(delayTime1);
+
+      
+      count = EEPROM.read(counter);
+      
+    ct = millis();
+    if ((ct - previousCount)>=1000) {
+      previousCount = ct;
+      if (count >=250)
+      {
+        count = 1;
+        EEPROM.update(counter, count);
+      }
+      count = count - 1.1;
+      EEPROM.update(counter, count);
+
+      if (count >=250)
+      {
+        count = 1;
+        EEPROM.update(counter, count);
+      }
+      
+
+    }
+    Serial.print("Count value is ");
+    Serial.println(count);
+      if (left==0) {
+    state2=linear_left;
+    EEPROM.update(out_address, state2);
+    delay(20);    
+    }
+
+  //if the right switch was pressed, change the direction
+  if (right == 0) {
+    state2 = linear_right;
+    EEPROM.update(out_address, state2);
+    delay(20);
+        }
+
+        outt= analogRead(out_signal);
+       if (outt>=600){
+         digitalWrite(state2, 1);
+         delay(200);
+         digitalWrite(state2, 0);
+         delay(1250);
+
+  }
+
+
+
   }
