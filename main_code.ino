@@ -46,7 +46,6 @@ bool inpin_stop;
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("Starting setup...");
   pinMode(app_trig, INPUT_PULLUP);
   pinMode(rssi_trig, INPUT_PULLUP);
   pinMode(limit, INPUT);
@@ -208,7 +207,7 @@ int dBmtoPercentage(int dBm)
 //in
 void outpin() {
   digitalWrite(out, 1);
-  analogWrite(wiper, 90);
+  analogWrite(wiper, 225);
   digitalWrite(pusher, 1);
       }
 
@@ -216,7 +215,7 @@ void outpin() {
 void inpin() {
   digitalWrite(in, 1);
   digitalWrite(wiper, 1);
-  analogWrite(pusher, 110);
+  analogWrite(pusher, 200);
   
   }
  
