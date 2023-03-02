@@ -1,4 +1,6 @@
-//D is out on the remote
+//Code by Olakanla Joshua jossytech
+//B is in on the remote
+//D is in on the remote
 #include <EEPROM.h>
 int linear_left = 2;
 int linear_right = 3;
