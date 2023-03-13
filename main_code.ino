@@ -166,14 +166,14 @@ void rssi_signal1(){
   }
 
 
-  if (strength > 10 && strength <= 79 && outpin_stop==false) {
-    idle();
-    outpin();
-  }
-
-  else if (strength >= 80 && strength <93 && inpin_stop==false) {
+  if (strength > 10 && strength <= 79 && inpin_stop==false) {
     idle();
     inpin();
+  }
+
+  else if (strength >= 80 && strength <93 && outpin_stop==false) {
+    idle();
+    outpin();
   }
   else {
     idle();
@@ -207,7 +207,7 @@ int dBmtoPercentage(int dBm)
 //in
 void outpin() {
   digitalWrite(out, 1);
-  analogWrite(wiper, 225);
+  analogWrite(wiper, 95);
   digitalWrite(pusher, 1);
       }
 
@@ -215,7 +215,7 @@ void outpin() {
 void inpin() {
   digitalWrite(in, 1);
   digitalWrite(wiper, 1);
-  analogWrite(pusher, 200);
+  analogWrite(pusher, 180);
   
   }
  
